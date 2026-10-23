@@ -1,0 +1,89 @@
+name: Build RarX
+
+# Đẩy mã lên nhánh main  → biên dịch thử và lưu bản dựng (Artifacts).
+# Đẩy tag dạng v1.2.0     → biên dịch, tạo GitHub Release kèm RarX-1.2.0.zip / .dmg.
+# Chức năng “Cập nhật” trong ứng dụng đọc Release mới nhất và tải tệp .zip này.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Xác định phiên bản
+        id: ver
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="$(sed -nE 's/^VERSION="\$\{VERSION:-([0-9.]+)\}"/\1/p' build.sh | head -1)"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Phiên bản: $VERSION"
+          xcodebuild -version
+          swift --version
+
+      - name: Biên dịch (Apple Silicon + Intel)
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: ./build.sh --universal --dmg --zip
+
+      - name: Kiểm tra gói
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/rarx-check && mkdir -p /tmp/rarx-check
+          ditto -x -k build/RarX.zip /tmp/rarx-check
+          APP="/tmp/rarx-check/RarX.app"
+          plutil -p "$APP/Contents/Info.plist" | grep -E "CFBundleShortVersionString|CFBundleIdentifier"
+          lipo -archs "$APP/Contents/MacOS/RarX"
+          codesign --verify --deep --strict "$APP"
+          ls "$APP/Contents/Resources" | head -30
+          "$APP/Contents/MacOS/7zz" | head -3 || true
+
+      - name: Đặt tên tệp theo phiên bản
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          cd build
+          mv RarX.zip "RarX-${VERSION}.zip"
+          mv RarX.dmg "RarX-${VERSION}.dmg"
+          shasum -a 256 "RarX-${VERSION}.zip" "RarX-${VERSION}.dmg" > SHA256SUMS.txt
+          ls -la
+
+      - name: Lưu bản dựng
+        uses: actions/upload-artifact@v4
+        with:
+          name: RarX-${{ steps.ver.outputs.version }}
+          path: |
+            build/RarX-*.zip
+            build/RarX-*.dmg
+            build/SHA256SUMS.txt
+
+      - name: Phát hành trên GitHub
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: RarX ${{ steps.ver.outputs.version }}
+          generate_release_notes: true
+          body: |
+            **Cài đặt:** tải `RarX-${{ steps.ver.outputs.version }}.dmg`, kéo RarX vào thư mục Ứng dụng.
+            Lần đầu mở: chuột phải vào RarX ▸ **Mở** (ứng dụng chưa được Apple công chứng).
+            Người đang dùng RarX chỉ cần mở **RarX ▸ Kiểm tra cập nhật…** rồi bấm **Cập nhật ngay**.
+          files: |
+            build/RarX-*.zip
+            build/RarX-*.dmg
+            build/SHA256SUMS.txt

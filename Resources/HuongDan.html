@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn RarX</title>
+<style>
+  :root {
+    --bg: #f6f7f7; --card: #ffffff; --text: #1d2424; --muted: #5d6b6b;
+    --teal: #12857d; --amber: #f59e0b; --line: #dfe5e4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161a1a; --card: #1f2525; --text: #e8eeee; --muted: #9aaaaa; --line: #2e3737; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+  header { background: linear-gradient(135deg, #16968c, #084849); color: #fff; padding: 40px 24px 32px; }
+  header .wrap, main { max-width: 820px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; font: 800 34px/1.1 ui-rounded, -apple-system, sans-serif; }
+  header p { margin: 0; opacity: .85; }
+  main { padding: 24px 16px 48px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px; margin: 0 0 16px; }
+  h2 { margin: 0 0 8px; font-size: 18px; }
+  h2 span { color: var(--amber); margin-right: 6px; }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin: 4px 0; }
+  kbd { font: 12px ui-monospace, Menlo, monospace; background: var(--bg); border: 1px solid var(--line);
+        border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; }
+  code { font: 13px ui-monospace, Menlo, monospace; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>RarX</h1>
+  <p>Nén và giải nén trên macOS — hướng dẫn nhanh</p>
+</div></header>
+<main>
+  <section>
+    <h2><span>①</span>Nén tệp</h2>
+    <ul>
+      <li>Kéo tệp/thư mục vào cửa sổ chào, hoặc thả lên biểu tượng RarX trên Dock.</li>
+      <li>Hoặc trong Finder: chuột phải ▸ <b>Thao tác nhanh</b> (hoặc <b>Dịch vụ</b>) ▸ <b>RarX: Nén…</b> / <b>RarX: Nén nhanh thành ZIP</b>.</li>
+      <li>Chọn định dạng (7Z, ZIP, RAR, TAR.GZ…), mức nén, mật khẩu, chia nhiều phần, rồi bấm <b>Nén</b>.</li>
+      <li>ZIP mặc định mã hoá AES-256. Nếu người nhận chỉ dùng Finder, chọn <i>ZipCrypto</i>.</li>
+    </ul>
+  </section>
+  <section>
+    <h2><span>②</span>Xem và giải nén</h2>
+    <ul>
+      <li>Nhấp đúp tệp nén (chọn <b>Mở bằng ▸ RarX</b> lần đầu), duyệt như Finder: nhấp đúp để vào thư mục hoặc mở tệp.</li>
+      <li>Kéo tệp từ danh sách ra Finder để lấy riêng tệp đó.</li>
+      <li><b>Giải nén</b> trên thanh công cụ: chọn nơi lưu, cách đặt thư mục, xử lý trùng tên.</li>
+      <li>Finder ▸ chuột phải ▸ <b>RarX: Giải nén tại đây</b> để giải nén ngay.</li>
+    </ul>
+  </section>
+  <section>
+    <h2><span>③</span>Sửa tệp nén</h2>
+    <ul>
+      <li>Thêm tệp: kéo thả vào cửa sổ, hoặc nút <b>Thêm</b>. Xoá, đổi tên, tạo thư mục mới ngay bên trong tệp nén.</li>
+      <li>Hỗ trợ 7Z, ZIP, TAR. Với RAR cần công cụ <code>rar</code> của RARLAB — RarX tự cài (Cài đặt ▸ Công cụ).</li>
+      <li><b>Kiểm tra</b> để phát hiện tệp hỏng; <b>Sửa tệp nén hỏng</b> cho RAR và ZIP.</li>
+      <li><b>Chuyển đổi định dạng</b>: ví dụ RAR → ZIP để gửi cho người không có trình giải nén.</li>
+    </ul>
+  </section>
+  <section>
+    <h2><span>④</span>Phím tắt</h2>
+    <table>
+      <tr><th>Phím</th><th>Tác dụng</th></tr>
+      <tr><td><kbd>⌘N</kbd></td><td>Tạo tệp nén mới</td></tr>
+      <tr><td><kbd>⌘O</kbd></td><td>Mở tệp nén</td></tr>
+      <tr><td><kbd>⌘E</kbd> / <kbd>⇧⌘E</kbd></td><td>Giải nén… / Giải nén tại đây</td></tr>
+      <tr><td><kbd>⇧⌘A</kbd></td><td>Thêm tệp vào tệp nén</td></tr>
+      <tr><td><kbd>⌘⌫</kbd></td><td>Xoá mục khỏi tệp nén</td></tr>
+      <tr><td><kbd>⌘T</kbd> / <kbd>⌘I</kbd></td><td>Kiểm tra / Thông tin</td></tr>
+      <tr><td><kbd>⌘Y</kbd></td><td>Xem nhanh</td></tr>
+      <tr><td><kbd>⌘↑</kbd> / <kbd>⌘↓</kbd></td><td>Lên thư mục cha / Mở mục đã chọn</td></tr>
+      <tr><td><kbd>⌘F</kbd></td><td>Tìm trong toàn bộ tệp nén</td></tr>
+      <tr><td><kbd>⌥⌘J</kbd></td><td>Cửa sổ tác vụ</td></tr>
+    </table>
+  </section>
+  <section>
+    <h2><span>⑤</span>Định dạng hỗ trợ</h2>
+    <table>
+      <tr><th>Việc</th><th>Định dạng</th></tr>
+      <tr><td>Mở, giải nén</td><td>7Z, ZIP, RAR (cả RAR5), TAR, GZ, BZ2, XZ, ZST, ISO, DMG, CAB, WIM, ARJ, LZH, CPIO, RPM, DEB, tệp chia phần .001 / .part1.rar…</td></tr>
+      <tr><td>Tạo mới</td><td>7Z, ZIP, TAR, TAR.GZ, TAR.XZ, TAR.BZ2; RAR (khi có công cụ RAR)</td></tr>
+      <tr><td>Thêm/xoá/đổi tên</td><td>7Z, ZIP, TAR; RAR (khi có công cụ RAR, không đổi tên)</td></tr>
+    </table>
+  </section>
+  <section>
+    <h2><span>⑥</span>Công cụ RAR và cập nhật</h2>
+    <ul>
+      <li><b>Công cụ RAR</b>: lần mở đầu tiên RarX tự tải gói “RAR for macOS” chính thức từ rarlab.com (cần mạng) để tạo và sửa tệp .rar. Giải nén .rar không cần công cụ này.</li>
+      <li>Khi RARLAB phát hành bản mới, vào <b>Cài đặt ▸ Công cụ</b> bấm <b>Cập nhật lên RAR x.xx</b>.</li>
+      <li>Có khoá bản quyền (rarreg.key)? Bấm <b>Nhập khoá bản quyền…</b> cùng chỗ đó.</li>
+      <li><b>Cập nhật RarX</b>: menu <b>RarX ▸ Kiểm tra cập nhật…</b> (hoặc cửa sổ <b>Giới thiệu RarX</b>). Khi nhà phát triển phát hành bản mới trên GitHub, bấm <b>Cập nhật ngay</b> — RarX tự tải, thay bản cũ và mở lại.</li>
+    </ul>
+  </section>
+  <p class="muted">Lõi nén: 7-Zip © Igor Pavlov, giấy phép GNU LGPL. RAR là định dạng thuộc bản quyền của RARLAB.</p>
+</main>
+</body>
+</html>
