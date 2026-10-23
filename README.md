@@ -113,6 +113,9 @@ Workflow `.github/workflows/build.yml` chạy trên máy chủ macOS của GitHu
 git tag v1.2.0 && git push origin v1.2.0
 ```
 
+  Hoặc không cần dòng lệnh: trên GitHub mở **Actions ▸ Build RarX ▸ Run workflow**, điền *release_version* (ví dụ `1.2.0`).
+  Nhớ tăng số phiên bản mặc định trong `build.sh` (dòng `VERSION=`) cho khớp trước khi phát hành.
+
 Người đang dùng RarX chỉ cần bấm **Cập nhật ngay** là nhận bản này.
 
 ## Cấu trúc mã nguồn
