@@ -228,6 +228,21 @@ final class RarToolManager: ObservableObject {
         }
     }
 
+    nonisolated private static func isDirectory(_ url: URL) -> Bool {
+        var flag: ObjCBool = false
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &flag) && flag.boolValue
+    }
+
+    nonisolated private static func locateExecutable(in directory: URL, depth: Int = 3) -> URL? {
+        guard let items = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else { return nil }
+        if let direct = items.first(where: { $0.lastPathComponent == "rar" && !isDirectory($0) }) { return direct }
+        guard depth > 1 else { return nil }
+        for item in items where isDirectory(item) {
+            if let found = locateExecutable(in: item, depth: depth - 1) { return found }
+        }
+        return nil
+    }
+
     nonisolated private static func installFiles(from archive: URL, work: URL) async throws {
         let fileManager = FileManager.default
         let extract = work.appendingPathComponent("extract", isDirectory: true)
@@ -237,9 +252,9 @@ final class RarToolManager: ObservableObject {
                                                       ["-xzf", archive.path, "-C", extract.path]))
         guard tar.exitCode == 0 else { throw RarToolError.extractFailed(tar.stderrText) }
 
-        let newDirectory = extract.appendingPathComponent("rar", isDirectory: true)
-        let newExecutable = newDirectory.appendingPathComponent("rar")
-        guard fileManager.fileExists(atPath: newExecutable.path) else { throw RarToolError.invalidPackage }
+        // Gói của RARLAB giải nén ra thư mục “rar/” chứa tệp chạy “rar”; tìm linh hoạt phòng khi cấu trúc đổi.
+        guard let newExecutable = locateExecutable(in: extract) else { throw RarToolError.invalidPackage }
+        let newDirectory = newExecutable.deletingLastPathComponent()
         try? fileManager.setAttributes([.posixPermissions: 0o755], ofItemAtPath: newExecutable.path)
         _ = try? await ProcessRunner.run(Command(URL(fileURLWithPath: "/usr/bin/xattr"), ["-cr", newDirectory.path]))
 
