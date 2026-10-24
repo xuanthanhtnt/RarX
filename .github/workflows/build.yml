@@ -1,20 +1,31 @@
 name: Build RarX
 
 # Đẩy mã lên nhánh main  → biên dịch thử và lưu bản dựng (Artifacts).
-# Đẩy tag dạng v1.2.0     → biên dịch, tạo GitHub Release kèm RarX-1.2.0.zip / .dmg.
-# Hoặc: tab Actions ▸ Build RarX ▸ Run workflow ▸ điền “release_version” (vd. 1.2.0) → cũng tạo Release.
-# Chức năng “Cập nhật” trong ứng dụng đọc Release mới nhất và tải tệp .zip này.
+# Phát hành bản mới (chọn một cách):
+#   1) Tab Actions ▸ Build RarX ▸ Run workflow ▸ bấm nút xanh. Mặc định tự phát hành bản ghi trong build.sh
+#      (VERSION=…), có thể điền số khác ở ô release_version; bỏ tích “publish” nếu chỉ muốn build thử.
+#   2) Tạo Release trên GitHub với tag dạng v1.2.0 (chữ v + số) ▸ Publish: workflow tự build và đính kèm tệp.
+# Chức năng “Cập nhật” trong ứng dụng đọc Release mới nhất và tải tệp .zip đính kèm.
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       release_version:
-        description: "Phát hành bản mới, ví dụ 1.2.0 (để trống = chỉ build thử)"
+        description: "Số phiên bản, ví dụ 1.2.0 (để trống = dùng VERSION trong build.sh)"
         required: false
         default: ""
+      publish:
+        description: "Phát hành lên GitHub Releases (bỏ tích = chỉ build thử)"
+        type: boolean
+        default: true
+
+concurrency:
+  group: build-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -30,24 +41,34 @@ jobs:
       - name: Xác định phiên bản
         id: ver
         env:
-          RELEASE_INPUT: ${{ github.event.inputs.release_version }}
+          EVENT: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_VERSION: ${{ github.event.inputs.release_version }}
+          INPUT_PUBLISH: ${{ github.event.inputs.publish }}
         run: |
-          RELEASE=false
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-            RELEASE=true
-          elif [[ -n "${RELEASE_INPUT:-}" ]]; then
-            VERSION="${RELEASE_INPUT#v}"
-            RELEASE=true
+          DEFAULT_VERSION="$(sed -nE 's/^VERSION="\$\{VERSION:-([0-9.]+)\}"/\1/p' build.sh | head -1)"
+          PUBLISH=false
+          if [[ "$EVENT" == "release" ]]; then
+            TAG="$RELEASE_TAG"
+            VERSION="${TAG#[vV]}"
+            PUBLISH=true
+          elif [[ "$EVENT" == "workflow_dispatch" ]]; then
+            VERSION="${INPUT_VERSION:-$DEFAULT_VERSION}"
+            VERSION="${VERSION#[vV]}"
+            TAG="v$VERSION"
+            [[ "${INPUT_PUBLISH:-true}" == "true" ]] && PUBLISH=true
           else
-            VERSION="$(sed -nE 's/^VERSION="\$\{VERSION:-([0-9.]+)\}"/\1/p' build.sh | head -1)"
+            VERSION="$DEFAULT_VERSION"
+            TAG="v$VERSION"
           fi
           if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){1,2}$ ]]; then
-            echo "Phiên bản không hợp lệ: '$VERSION' (cần dạng 1.2.0)"; exit 1
+            echo "::error::Phiên bản không hợp lệ: '$VERSION'. Tên tag/phiên bản phải có dạng v1.2.0 (chữ v + số, ví dụ v1.1.0)."
+            exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
-          echo "Phiên bản: $VERSION (phát hành: $RELEASE)"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release=$PUBLISH" >> "$GITHUB_OUTPUT"
+          echo "Phiên bản: $VERSION · tag: $TAG · phát hành: $PUBLISH"
           xcodebuild -version
           swift --version
 
@@ -94,10 +115,11 @@ jobs:
         if: steps.ver.outputs.release == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.ver.outputs.version }}
+          tag_name: ${{ steps.ver.outputs.tag }}
           target_commitish: ${{ github.sha }}
           name: RarX ${{ steps.ver.outputs.version }}
           generate_release_notes: true
+          append_body: true
           body: |
             **Cài đặt:** tải `RarX-${{ steps.ver.outputs.version }}.dmg`, kéo RarX vào thư mục Ứng dụng.
             Lần đầu mở: chuột phải vào RarX ▸ **Mở** (ứng dụng chưa được Apple công chứng).
