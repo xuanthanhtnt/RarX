@@ -26,18 +26,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DispatchQueue.global(qos: .utility).async { TempSpace.purgeStale() }
         claimUnhandledArchiveTypes()
 
-        // Người dùng tự mở RarX (Launchpad, Finder…) thì hiện trên Dock như bình thường;
-        // được Finder gọi để nén/giải nén thì chạy ngầm, không hiện biểu tượng.
+        // Người dùng tự mở RarX (Ứng dụng, Launchpad…) thì mở màn hình chào ngay (kèm biểu tượng trên Dock).
+        // Được Finder gọi để nén/giải nén (Dịch vụ, mở tệp) thì macOS báo không phải lần mở thường:
+        // chạy ngầm, không cửa sổ, không biểu tượng.
         if (notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool) ?? true {
-            NSApp.setActivationPolicy(.regular)
-            NSApp.activate(ignoringOtherApps: true)
+            WindowManager.shared.showWelcome()
         }
 
-        // Khởi động không mở cửa sổ nào; màn hình chào chỉ hiện khi bấm biểu tượng trên Dock (hoặc Công cụ ▸ Màn hình chào).
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 600_000_000)
-            // Mở ở chế độ nền (không lên phía trước) thì ẩn khỏi Dock luôn, khỏi đợi người dùng chuyển ứng dụng.
-            WindowManager.shared.updateDockIcon()
             if ToolLocator.shared.sevenZip == nil {
                 Prompts.showMessage(
                     "Chưa tìm thấy 7-Zip",
