@@ -11,6 +11,19 @@ final class WindowManager: NSObject, NSWindowDelegate {
     private var utilityControllers: [String: NSWindowController] = [:]
     private var transientControllers: [NSWindowController] = []
 
+    // MARK: - Biểu tượng trên Dock
+
+    /// RarX chỉ hiện trên Dock khi đang có cửa sổ (chào, duyệt tệp nén, tiện ích) hoặc đang ở phía trước.
+    /// Nén/giải nén từ Finder chạy ngầm nên không hiện biểu tượng; hộp thoại tuỳ chọn và hỏi mật khẩu cũng không tính.
+    func updateDockIcon() {
+        let hasWindows = welcomeController != nil || !archiveControllers.isEmpty || !utilityControllers.isEmpty
+        if hasWindows {
+            if NSApp.activationPolicy() != .regular { NSApp.setActivationPolicy(.regular) }
+        } else if !NSApp.isActive && NSApp.activationPolicy() != .accessory {
+            NSApp.setActivationPolicy(.accessory)
+        }
+    }
+
     // MARK: - Màn hình chào
 
     func showWelcome() {
@@ -27,6 +40,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
         window.delegate = self
         let controller = NSWindowController(window: window)
         welcomeController = controller
+        updateDockIcon()
         window.center()
         controller.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -68,6 +82,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
             controller.window?.center()
         }
         archiveControllers.append(controller)
+        updateDockIcon()
         controller.showWindow(nil)
         doc.load()
 
@@ -79,6 +94,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
 
     func archiveWindowDidClose(_ controller: ArchiveWindowController) {
         archiveControllers.removeAll { $0 === controller }
+        updateDockIcon()
     }
 
     // MARK: - Tạo tệp nén / giải nén (cửa sổ độc lập)
@@ -226,6 +242,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
         window.setFrameAutosaveName("RarX.\(id)")
         let controller = NSWindowController(window: window)
         utilityControllers[id] = controller
+        updateDockIcon()
         if !window.setFrameUsingName("RarX.\(id)") { window.center() }
         controller.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -261,6 +278,7 @@ final class WindowManager: NSObject, NSWindowDelegate {
         for (key, controller) in utilityControllers where controller.window === window {
             utilityControllers[key] = nil
         }
+        updateDockIcon()
     }
 }
 

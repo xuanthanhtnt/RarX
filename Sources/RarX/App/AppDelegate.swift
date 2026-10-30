@@ -26,9 +26,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DispatchQueue.global(qos: .utility).async { TempSpace.purgeStale() }
         claimUnhandledArchiveTypes()
 
+        // Người dùng tự mở RarX (Launchpad, Finder…) thì hiện trên Dock như bình thường;
+        // được Finder gọi để nén/giải nén thì chạy ngầm, không hiện biểu tượng.
+        if (notification.userInfo?[NSApplication.launchIsDefaultUserInfoKey] as? Bool) ?? true {
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+
         // Khởi động không mở cửa sổ nào; màn hình chào chỉ hiện khi bấm biểu tượng trên Dock (hoặc Công cụ ▸ Màn hình chào).
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 600_000_000)
+            // Mở ở chế độ nền (không lên phía trước) thì ẩn khỏi Dock luôn, khỏi đợi người dùng chuyển ứng dụng.
+            WindowManager.shared.updateDockIcon()
             if ToolLocator.shared.sevenZip == nil {
                 Prompts.showMessage(
                     "Chưa tìm thấy 7-Zip",
@@ -81,6 +90,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         if !flag { WindowManager.shared.showWelcome() }
         return true
+    }
+
+    func applicationDidResignActive(_ notification: Notification) {
+        WindowManager.shared.updateDockIcon()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

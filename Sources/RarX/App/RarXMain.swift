@@ -11,7 +11,8 @@ enum RarXMain {
         let app = NSApplication.shared
         let delegate = AppDelegate()
         app.delegate = delegate
-        app.setActivationPolicy(.regular)
+        // Mặc định chạy ngầm, không hiện trên Dock; WindowManager.updateDockIcon() bật lại khi có cửa sổ.
+        app.setActivationPolicy(.accessory)
         withExtendedLifetime(delegate) {
             app.run()
         }
