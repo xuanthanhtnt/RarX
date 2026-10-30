@@ -9,7 +9,7 @@
 #    ./build.sh --zip         Tạo thêm build/RarX.zip (gói mà chức năng Cập nhật trong ứng dụng tải về)
 #    ./build.sh --universal   Chạy được trên cả Apple Silicon lẫn Intel (cần Xcode đầy đủ)
 #
-#  Biến môi trường: VERSION (mặc định 1.1.0), BUILD_NUMBER, BUNDLE_ID.
+#  Biến môi trường: VERSION (mặc định 1.1.1), BUILD_NUMBER, BUNDLE_ID.
 #  Yêu cầu: macOS 13 trở lên và Xcode (miễn phí trên App Store).
 #  Lần chạy đầu sẽ tự tải 7-Zip (7zz) chính chủ từ GitHub/7-zip.org để đóng gói kèm.
 #  Công cụ RAR không đóng gói sẵn: RarX tự tải bản chính thức từ rarlab.com ở lần mở đầu tiên.
@@ -21,7 +21,7 @@ ROOT="$(pwd)"
 
 APP_NAME="RarX"
 BUNDLE_ID="${BUNDLE_ID:-com.rarx.app}"
-VERSION="${VERSION:-1.1.0}"
+VERSION="${VERSION:-1.1.1}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(date +%Y%m%d%H%M)}"
 SEVENZIP_VERSION="${SEVENZIP_VERSION:-26.04}"
 

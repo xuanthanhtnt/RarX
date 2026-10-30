@@ -4,8 +4,6 @@ import UniformTypeIdentifiers
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let services = ServiceProvider()
-    /// Ứng dụng được mở để xử lý tệp (Finder, Dock, Dịch vụ) — không cần hiện màn hình chào.
-    static var launchedForWork = false
     /// Đang thoát để RarX tự thay bằng bản cập nhật — bỏ qua hộp thoại “đang có tác vụ chạy”.
     static var isRelaunchingForUpdate = false
 
@@ -28,11 +26,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         DispatchQueue.global(qos: .utility).async { TempSpace.purgeStale() }
         claimUnhandledArchiveTypes()
 
+        // Khởi động không mở cửa sổ nào; màn hình chào chỉ hiện khi bấm biểu tượng trên Dock (hoặc Công cụ ▸ Màn hình chào).
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 600_000_000)
-            if !AppDelegate.launchedForWork && !WindowManager.shared.hasVisibleWindows {
-                WindowManager.shared.showWelcome()
-            }
             if ToolLocator.shared.sevenZip == nil {
                 Prompts.showMessage(
                     "Chưa tìm thấy 7-Zip",
@@ -79,7 +75,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {
-        AppDelegate.launchedForWork = true
         WindowManager.shared.handleOpen(urls: urls)
     }
 

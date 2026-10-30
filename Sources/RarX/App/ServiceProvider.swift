@@ -13,7 +13,6 @@ final class ServiceProvider: NSObject {
     @objc func compressFiles(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
         let urls = fileURLs(from: pasteboard)
         guard !urls.isEmpty else { return }
-        AppDelegate.launchedForWork = true
         WindowManager.shared.showCreate(sources: urls)
     }
 
@@ -21,34 +20,27 @@ final class ServiceProvider: NSObject {
     @objc func quickZip(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
         let urls = fileURLs(from: pasteboard)
         guard !urls.isEmpty else { return }
-        AppDelegate.launchedForWork = true
         Workflows.quickZip(urls)
-        WindowManager.shared.showJobs()
     }
 
     /// RarX: Giải nén tại đây
     @objc func extractHere(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
         let urls = fileURLs(from: pasteboard).filter(ArchiveFormat.isArchive)
         guard !urls.isEmpty else { return }
-        AppDelegate.launchedForWork = true
         Workflows.extractHere(urls)
-        WindowManager.shared.showJobs()
     }
 
     /// RarX: Giải nén vào thư mục riêng
     @objc func extractToFolder(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
         let urls = fileURLs(from: pasteboard).filter(ArchiveFormat.isArchive)
         guard !urls.isEmpty else { return }
-        AppDelegate.launchedForWork = true
         Workflows.extractToOwnFolder(urls)
-        WindowManager.shared.showJobs()
     }
 
     /// RarX: Giải nén… (chọn nơi lưu, mật khẩu…)
     @objc func extractWithOptions(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
         let urls = fileURLs(from: pasteboard).filter(ArchiveFormat.isArchive)
         guard !urls.isEmpty else { return }
-        AppDelegate.launchedForWork = true
         WindowManager.shared.showExtract(archives: urls)
     }
 
@@ -56,7 +48,6 @@ final class ServiceProvider: NSObject {
     @objc func checksumFiles(_ pasteboard: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>) {
         let urls = fileURLs(from: pasteboard).filter { !FileOps.isDirectory($0) }
         guard !urls.isEmpty else { return }
-        AppDelegate.launchedForWork = true
         WindowManager.shared.showChecksum(files: urls)
     }
 }

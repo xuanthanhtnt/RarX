@@ -11,10 +11,6 @@ final class WindowManager: NSObject, NSWindowDelegate {
     private var utilityControllers: [String: NSWindowController] = [:]
     private var transientControllers: [NSWindowController] = []
 
-    var hasVisibleWindows: Bool {
-        NSApp.windows.contains { $0.isVisible && $0.canBecomeMain }
-    }
-
     // MARK: - Màn hình chào
 
     func showWelcome() {
@@ -96,7 +92,6 @@ final class WindowManager: NSObject, NSWindowDelegate {
             onCreate: { request, extras in
                 weakController?.close()
                 Workflows.compress(request, extras: extras, window: nil)
-                WindowManager.shared.showJobs()
             }
         )
         let window = makeWindow(title: "Tạo tệp nén", content: view)
@@ -133,7 +128,6 @@ final class WindowManager: NSObject, NSWindowDelegate {
                     }
                     Workflows.extract(archive: detection.primaryURL, format: detection.format, config: perArchive, window: nil)
                 }
-                WindowManager.shared.showJobs()
             }
         )
         let window = makeWindow(title: "Giải nén", content: view)

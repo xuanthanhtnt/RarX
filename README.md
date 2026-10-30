@@ -108,9 +108,9 @@ Workflow `.github/workflows/build.yml` chạy trên máy chủ macOS của GitHu
 - Mỗi lần đẩy lên `main` (hoặc mở Pull Request): biên dịch bản Universal (Apple Silicon + Intel), kiểm tra gói và lưu
   `RarX-<phiên bản>.zip` / `.dmg` trong mục **Actions ▸ Artifacts**.
 - **Phát hành bản mới** (cách dễ nhất, không cần dòng lệnh): trên GitHub mở **Actions ▸ Build RarX ▸ Run workflow** và bấm
-  nút xanh. Mặc định workflow phát hành đúng số `VERSION=` trong `build.sh` (hiện là 1.1.0); có thể điền số khác ở ô
-  *release_version*, hoặc bỏ tích *publish* nếu chỉ muốn build thử. Kết quả: một Release `v1.1.0` kèm `RarX-1.1.0.zip`,
-  `RarX-1.1.0.dmg` và `SHA256SUMS.txt`.
+  nút xanh. Mặc định workflow phát hành đúng số `VERSION=` trong `build.sh` (hiện là 1.1.1); có thể điền số khác ở ô
+  *release_version*, hoặc bỏ tích *publish* nếu chỉ muốn build thử. Kết quả: một Release `v1.1.1` kèm `RarX-1.1.1.zip`,
+  `RarX-1.1.1.dmg` và `SHA256SUMS.txt`.
 - Hoặc tạo Release thủ công trên GitHub (**Releases ▸ Draft a new release**) với **tag dạng `v1.2.0`** (chữ `v` + số, không phải
   `V12`) rồi **Publish release** — workflow tự build và đính kèm các tệp vào Release đó.
 - Trước khi phát hành, tăng `VERSION=` trong `build.sh` cho khớp số phiên bản mới.
