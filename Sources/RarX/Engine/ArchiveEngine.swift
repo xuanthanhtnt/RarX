@@ -539,6 +539,14 @@ enum ArchiveEngine {
         if lower.contains("not enough space") || lower.contains("no space left") || lower.contains("disk full") {
             return .diskFull
         }
+        // macOS chặn quyền (errno=1), ví dụ: "ERROR: /Users/…/Downloads/a.zip : opening : errno=1 : Operation not permitted".
+        if lower.contains("operation not permitted") {
+            let line = text.components(separatedBy: .newlines).first { $0.lowercased().contains("operation not permitted") }
+            let path = line?.components(separatedBy: " : ")
+                .map { $0.replacingOccurrences(of: "ERROR: ", with: "").trimmingCharacters(in: .whitespaces) }
+                .first { $0.hasPrefix("/") }
+            return .permissionDenied(path ?? "")
+        }
         let summary = ConsoleText.errorSummary(text)
         let corruptHints = ["data error", "crc failed", "unexpected end", "headers error", "is corrupt", "checksum error", "broken"]
         if corruptHints.contains(where: { lower.contains($0) }) {

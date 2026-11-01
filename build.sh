@@ -9,7 +9,7 @@
 #    ./build.sh --zip         Tạo thêm build/RarX.zip (gói mà chức năng Cập nhật trong ứng dụng tải về)
 #    ./build.sh --universal   Chạy được trên cả Apple Silicon lẫn Intel (cần Xcode đầy đủ)
 #
-#  Biến môi trường: VERSION (mặc định 1.1.3), BUILD_NUMBER, BUNDLE_ID.
+#  Biến môi trường: VERSION (mặc định 1.1.4), BUILD_NUMBER, BUNDLE_ID.
 #  Yêu cầu: macOS 13 trở lên và Xcode (miễn phí trên App Store).
 #  Lần chạy đầu sẽ tự tải 7-Zip (7zz) chính chủ từ GitHub/7-zip.org để đóng gói kèm.
 #  Công cụ RAR không đóng gói sẵn: RarX tự tải bản chính thức từ rarlab.com ở lần mở đầu tiên.
@@ -21,7 +21,7 @@ ROOT="$(pwd)"
 
 APP_NAME="RarX"
 BUNDLE_ID="${BUNDLE_ID:-com.rarx.app}"
-VERSION="${VERSION:-1.1.3}"
+VERSION="${VERSION:-1.1.4}"
 BUILD_NUMBER="${BUILD_NUMBER:-$(date +%Y%m%d%H%M)}"
 SEVENZIP_VERSION="${SEVENZIP_VERSION:-26.04}"
 
@@ -161,7 +161,9 @@ xattr -cr "$APP" 2>/dev/null || true
 for helper in "$APP/Contents/MacOS/7zz" "$APP/Contents/MacOS/rar"; do
     [[ -f "$helper" ]] && codesign --force --sign - --timestamp=none "$helper"
 done
-codesign --force --sign - --timestamp=none "$APP"
+# Yêu cầu chữ ký theo mã định danh (thay vì cdhash mặc định của ad-hoc) để macOS nhận ra mọi bản RarX
+# là cùng một ứng dụng: quyền đã cấp (Tệp và thư mục…) không mất sau mỗi lần cập nhật.
+codesign --force --sign - --timestamp=none -r="designated => identifier \"$BUNDLE_ID\"" "$APP"
 codesign --verify --verbose=1 "$APP" >/dev/null 2>&1 && echo "Chữ ký hợp lệ."
 
 # -----------------------------------------------------------------------------

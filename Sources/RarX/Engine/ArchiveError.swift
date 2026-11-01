@@ -9,6 +9,8 @@ enum ArchiveError: LocalizedError, Equatable {
     case notAnArchive
     case corrupted(String)
     case diskFull
+    /// macOS (Quyền riêng tư ▸ Tệp và thư mục) chặn đọc/ghi đường dẫn này.
+    case permissionDenied(String)
     case cancelled
     case unsupported(String)
     case failed(String)
@@ -29,6 +31,10 @@ enum ArchiveError: LocalizedError, Equatable {
             return detail.isEmpty ? "Tệp nén bị hỏng hoặc không đầy đủ." : "Tệp nén bị hỏng hoặc không đầy đủ:\n\(detail)"
         case .diskFull:
             return "Ổ đĩa không còn đủ dung lượng."
+        case .permissionDenied(let path):
+            return path.isEmpty
+                ? "macOS chưa cho phép RarX truy cập tệp hoặc thư mục này."
+                : "macOS chưa cho phép RarX truy cập thư mục “\(Self.protectedFolderName(for: path))”."
         case .cancelled:
             return "Đã huỷ."
         case .unsupported(let detail):
@@ -46,9 +52,26 @@ enum ArchiveError: LocalizedError, Equatable {
             return "Chạy lại ./build.sh để đóng gói 7-Zip vào ứng dụng, hoặc cài bằng Homebrew: brew install sevenzip."
         case .corrupted:
             return "Thử tải lại tệp, hoặc dùng Công cụ ▸ Sửa tệp nén (với .rar/.zip)."
+        case .permissionDenied:
+            return "Mở Cài đặt hệ thống ▸ Quyền riêng tư & Bảo mật ▸ Tệp và thư mục, bật thư mục này cho RarX "
+                + "(hoặc thêm RarX vào Truy cập toàn bộ ổ đĩa), rồi thử lại."
         default:
             return nil
         }
+    }
+
+    /// Thư mục được macOS bảo vệ chứa `path` (Tải về, Màn hình nền, Tài liệu, ổ đĩa ngoài…),
+    /// để người dùng biết cần bật mục nào trong Cài đặt.
+    private static func protectedFolderName(for path: String) -> String {
+        let fileManager = FileManager.default
+        let home = fileManager.homeDirectoryForCurrentUser
+        for name in ["Downloads", "Desktop", "Documents"] {
+            let folder = home.appendingPathComponent(name).path
+            if path == folder || path.hasPrefix(folder + "/") { return fileManager.displayName(atPath: folder) }
+        }
+        let parts = path.split(separator: "/")
+        if parts.count > 1 && parts[0] == "Volumes" { return String(parts[1]) }
+        return fileManager.displayName(atPath: (path as NSString).deletingLastPathComponent)
     }
 
     var isPasswordProblem: Bool {

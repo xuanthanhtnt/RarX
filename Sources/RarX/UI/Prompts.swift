@@ -83,8 +83,17 @@ enum Prompts {
         alert.messageText = title
         alert.informativeText = error.userMessage
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "OK")
-        Task { _ = await present(alert, on: window) }
+        // macOS chặn quyền truy cập thư mục: đưa thẳng tới mục cấp quyền trong Cài đặt hệ thống.
+        var needsPrivacyAccess = false
+        if case .permissionDenied? = error as? ArchiveError { needsPrivacyAccess = true }
+        if needsPrivacyAccess { alert.addButton(withTitle: "Mở Cài đặt") }
+        alert.addButton(withTitle: needsPrivacyAccess ? "Đóng" : "OK")
+        Task {
+            let response = await present(alert, on: window)
+            if needsPrivacyAccess && response == .alertFirstButtonReturn {
+                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders")!)
+            }
+        }
     }
 
     static func showMessage(_ title: String, _ message: String, window: NSWindow?) {
